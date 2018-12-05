@@ -1865,5 +1865,51 @@ router.post('/insert_nuevo_producto', function (req, res, next) {
     });
 });
 
+router.post('/generarpdfcotizacion', function (req, res, next) {
+
+    //creamos el PDF
+    var pathpdf = 'E:' + '/sys_files/' + req.body.nombre_archivo + '.pdf';
+    var options = {
+        //filename: pathpdf,
+        format: 'Letter'
+    };
+
+    fs.readFile('./views/cotizacion.html', function callback(err, data) {
+        if (err) {
+            res.json(err);
+            return;
+        }
+
+
+        var templateHtml = data.toString();
+
+        var contenido = req.body.template;
+
+        //contenido = contenido.replace(/{{nombre_cliente}}/g, req.body.nombre_cliente);
+        //contenido = contenido.replace(/{{email_asesor}}/g, req.body.email_asesor);
+
+        ////reemplazamos el valor de la plantilla básica
+        templateHtml = templateHtml.replace(/{{contenidoToPdf}}/g, contenido);
+
+        pdf.create(templateHtml, options).toFile(pathpdf, function (err, responseCreate) {
+            if (err) {
+                console.log(err);
+                return res.json(err);
+            } else {
+                console.log(responseCreate);
+                //guardamos una referencia del PDF  y lo guardamos en gestión documental
+                res.json({
+                    "MSG": "OK",
+                    "responseCreate": responseCreate
+                });
+            }
+        });
+
+    });
+
+
+    //res.json('respond with a resource en nueva orden y para el envío de email');
+
+});
 
 module.exports = router;
